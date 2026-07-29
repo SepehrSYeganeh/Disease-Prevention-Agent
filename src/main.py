@@ -5,6 +5,7 @@ from chainlit.types import ThreadDict
 from dotenv import load_dotenv
 import os
 from agents import agent
+from agents.config import AgentState
 
 load_dotenv()
 
