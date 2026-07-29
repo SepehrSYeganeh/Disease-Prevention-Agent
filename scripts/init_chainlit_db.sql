@@ -1,0 +1,5 @@
+CREATE USER admin WITH PASSWORD 'admin';
+
+CREATE DATABASE chainlit_db OWNER admin;
+
+GRANT ALL PRIVILEGES ON DATABASE chainlit_db TO admin;
