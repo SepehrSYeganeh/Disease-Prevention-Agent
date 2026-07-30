@@ -6,6 +6,7 @@ from langchain_ollama import ChatOllama
 
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add_messages]
+    user_data: dict | None
 
 
 llm = ChatOllama(

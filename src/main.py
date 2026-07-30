@@ -12,7 +12,13 @@ load_dotenv()
 
 @cl.on_chat_start
 async def start():
-    cl.user_session.set('state', AgentState(messages=[]))
+    cl.user_session.set(
+        'state',
+        AgentState(
+            messages=[],
+            user_data=None
+        )
+    )
     await cl.Message(content="Hello! How can I help you?").send()
 
 
@@ -65,7 +71,7 @@ async def on_chat_resume(thread: ThreadDict):
             step_type = step.get("type")
             content = (step.get("output") or "").strip()
             if not content:
-                continue  # skip empty rows
+                continue
 
             if step_type == "user_message":
                 messages.append(HumanMessage(content=content))

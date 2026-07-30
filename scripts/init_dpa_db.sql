@@ -1,0 +1,5 @@
+CREATE USER admin WITH PASSWORD 'admin';
+
+CREATE DATABASE dpa_db OWNER admin;
+
+GRANT ALL PRIVILEGES ON DATABASE dpa_db TO admin;
