@@ -16,7 +16,8 @@ async def start():
         'state',
         AgentState(
             messages=[],
-            user_data=None
+            user_profile=None,
+            user_biometrics=None
         )
     )
     await cl.Message(content="Hello! How can I help you?").send()

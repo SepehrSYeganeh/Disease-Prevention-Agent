@@ -25,7 +25,7 @@ CREATE TABLE medical.user_health_profile
 CREATE TABLE medical.user_biometric_log
 (
     id            UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
-    user_id       UUID        NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,
+    user_id       UUID        NOT NULL UNIQUE REFERENCES public.users (id) ON DELETE CASCADE,
     recorded_at   TIMESTAMPTZ NOT NULL DEFAULT now() CHECK (recorded_at <= now()),
     height_cm     NUMERIC(5, 2) CHECK (height_cm IS NULL OR height_cm > 0),
     weight_kg     NUMERIC(5, 2) CHECK (weight_kg IS NULL OR weight_kg > 0),
