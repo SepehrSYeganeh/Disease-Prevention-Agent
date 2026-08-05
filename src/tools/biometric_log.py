@@ -7,7 +7,6 @@ from uuid import UUID
 class BiometricLog(BaseModel):
     """Base schema for user biometric log."""
     id: UUID = Field(description="Primary key")
-    user_id: UUID = Field(description="Reference to the user (unique)")
     recorded_at: datetime = Field(description="Timestamp of the record; cannot be in the future")
     height_cm: Optional[float | int] = Field(default=None, description="Height in centimeters")
     weight_kg: Optional[float | int] = Field(default=None, description="Weight in kilograms")

@@ -7,7 +7,6 @@ from uuid import UUID
 class HealthProfile(BaseModel):
     """Base schema for user health profile."""
     id: UUID = Field(description="Primary key")
-    user_id: UUID = Field(description="Reference to the user (unique)")
     created_at: datetime = Field(description="Date and time at which the user was created")
     first_name: Optional[str] = Field(default=None, description="User's first name")
     last_name: Optional[str] = Field(default=None, description="User's last name")
@@ -64,13 +63,13 @@ class HealthProfile(BaseModel):
         return self
 
 
+def select_profile(identifier: str) -> Optional[HealthProfile]:
+    ...
+
+
 def insert_profile():
     ...
 
 
 def update_profile():
     ...
-
-
-def select_profile():
-    pass
