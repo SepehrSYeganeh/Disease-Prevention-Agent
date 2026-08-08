@@ -1,5 +1,5 @@
 import pandas as pd
-from src.tools.arrhythmia_classifier import ecg_classifier
+from src.tools.beat_classifier import ecg_classifier
 
 test_df = pd.read_csv("../data/mit-bih-arrhythmia-dataset/mitbih_test.csv")
 row = 0
