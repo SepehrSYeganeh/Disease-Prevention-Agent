@@ -1,10 +1,13 @@
-from langchain_core.messages import HumanMessage, AIMessage
 import chainlit as cl
 from chainlit.data.sql_alchemy import SQLAlchemyDataLayer
 from chainlit.types import ThreadDict
+from chainlit.input_widget import TextInput, Select, Switch
+from langchain_core.messages import HumanMessage, AIMessage
+
 from dotenv import load_dotenv
 import os
 import hashlib
+
 from agents import agent
 from agents.config import AgentState
 
@@ -13,6 +16,57 @@ data_layer = SQLAlchemyDataLayer(
     conninfo=os.getenv("DATABASE_URL"),
     show_logger=True
 )
+
+
+@cl.data_layer
+def get_data_layer() -> SQLAlchemyDataLayer:
+    return data_layer
+
+
+def hash_password(password: str) -> str:
+    """Returns a simple SHA-256 hash of the password."""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    """Compares the incoming password hash with the stored hash."""
+    return hash_password(password) == stored_hash
+
+
+@cl.password_auth_callback
+async def auth_callback(username: str, password: str) -> cl.User | None:
+    identifier = username.strip().lower()
+    if not identifier or not password:
+        return None
+
+    existing_user = await data_layer.get_user(identifier)
+
+    # log in
+    if existing_user:
+        stored_hash = existing_user.metadata.get("password_hash") if existing_user.metadata else None
+        if stored_hash and verify_password(password, stored_hash):
+            return cl.User(
+                identifier=existing_user.identifier,
+                metadata=existing_user.metadata
+            )
+        else:
+            return None
+
+    # sign up
+    else:
+        password_hash = hash_password(password)
+        new_user = cl.User(
+            identifier=identifier,
+            metadata={"password_hash": password_hash}
+        )
+
+        persisted_user = await data_layer.create_user(new_user)
+        if persisted_user:
+            return cl.User(
+                identifier=persisted_user.identifier,
+                metadata=persisted_user.metadata
+            )
+        return None
 
 
 @cl.on_chat_start
@@ -82,54 +136,3 @@ async def on_chat_resume(thread: ThreadDict):
                 user_biometrics=None
             )
         )
-
-
-@cl.data_layer
-def get_data_layer() -> SQLAlchemyDataLayer:
-    return data_layer
-
-
-def hash_password(password: str) -> str:
-    """Returns a simple SHA-256 hash of the password."""
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
-def verify_password(password: str, stored_hash: str) -> bool:
-    """Compares the incoming password hash with the stored hash."""
-    return hash_password(password) == stored_hash
-
-
-@cl.password_auth_callback
-async def auth_callback(username: str, password: str) -> cl.User | None:
-    identifier = username.strip().lower()
-    if not identifier or not password:
-        return None
-
-    existing_user = await data_layer.get_user(identifier)
-
-    # log in
-    if existing_user:
-        stored_hash = existing_user.metadata.get("password_hash") if existing_user.metadata else None
-        if stored_hash and verify_password(password, stored_hash):
-            return cl.User(
-                identifier=existing_user.identifier,
-                metadata=existing_user.metadata
-            )
-        else:
-            return None
-
-    # sign up
-    else:
-        password_hash = hash_password(password)
-        new_user = cl.User(
-            identifier=identifier,
-            metadata={"password_hash": password_hash}
-        )
-
-        persisted_user = await data_layer.create_user(new_user)
-        if persisted_user:
-            return cl.User(
-                identifier=persisted_user.identifier,
-                metadata=persisted_user.metadata
-            )
-        return None
