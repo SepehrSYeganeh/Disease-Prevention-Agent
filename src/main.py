@@ -1,7 +1,6 @@
 import chainlit as cl
 from chainlit.data.sql_alchemy import SQLAlchemyDataLayer
 from chainlit.types import ThreadDict
-from chainlit.input_widget import TextInput, Select, Switch
 from langchain_core.messages import HumanMessage, AIMessage
 
 from dotenv import load_dotenv
@@ -10,8 +9,12 @@ import hashlib
 
 from agents import agent
 from agents.config import AgentState
+from medicaldb.health_profile import get_user_health_profile
 
 load_dotenv()
+
+# ============ DATA LAYER ============
+
 data_layer = SQLAlchemyDataLayer(
     conninfo=os.getenv("DATABASE_URL"),
     show_logger=True
@@ -22,6 +25,8 @@ data_layer = SQLAlchemyDataLayer(
 def get_data_layer() -> SQLAlchemyDataLayer:
     return data_layer
 
+
+# ============ AUTH ============
 
 def hash_password(password: str) -> str:
     """Returns a simple SHA-256 hash of the password."""
@@ -69,19 +74,27 @@ async def auth_callback(username: str, password: str) -> cl.User | None:
         return None
 
 
+# ============ CHAT ============
+
 @cl.on_chat_start
 async def start():
     user: cl.User = cl.user_session.get("user")
     cl.user_session.set("identifier", user.identifier)
+
+    uhp = await get_user_health_profile(user.identifier)
+    if uhp is None:
+        # TODO: use AskUserMessage to create a uhp
+        pass
+
     cl.user_session.set(
         'state',
         AgentState(
             messages=[],
-            user_profile=None,
+            user_profile=uhp,
             user_biometrics=None
         )
     )
-    await cl.Message(content=f"Hello {user.identifier}! How can I help you?").send()
+    await cl.Message(content=f"Hello {user.identifier}! How can I help you? test {test}").send()
 
 
 @cl.on_message

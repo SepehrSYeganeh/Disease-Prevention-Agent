@@ -2,14 +2,13 @@ from typing import TypedDict, List, Annotated
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage
 from langchain_ollama import ChatOllama
-from tools.health_profile import HealthProfile
-from tools.biometric_log import BiometricLog
+from medicaldb.health_profile import HealthProfileSchema
 
 
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add_messages]
-    user_profile: HealthProfile | None
-    user_biometrics: BiometricLog | None
+    user_profile: HealthProfileSchema | None
+    user_biometrics: dict | None
 
 
 llm = ChatOllama(

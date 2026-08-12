@@ -4,16 +4,18 @@ from sqlalchemy import (
     ForeignKey,
     String,
     UniqueConstraint,
-    BigInteger
+    BigInteger,
+    func,
+    select
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.sql import func
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, Literal, Any
 
-from . import MedicalBase
+from . import MedicalBase, AsyncSession
 
 
 class UserHealthProfile(MedicalBase):
@@ -54,3 +56,63 @@ class UserHealthProfile(MedicalBase):
     psychiatric_disorders: Mapped[Optional[dict]] = mapped_column(JSONB)
     medications_supplements: Mapped[Optional[dict]] = mapped_column(JSONB)
     clinical_data: Mapped[Optional[dict]] = mapped_column(JSONB)
+
+
+async def get_user_health_profile(identifier: str) -> Optional[UserHealthProfile]:
+    async with AsyncSession() as session:
+        print("inside get_user_health_profile with", identifier)
+        result = await session.execute(
+            select(UserHealthProfile).where(UserHealthProfile.user_id == identifier)
+        )
+        print("after")
+        return result.scalar_one_or_none()
+
+
+async def upsert_user_health_profile(
+        identifier: str,
+        **fields
+) -> UserHealthProfile:
+    async with AsyncSessionLocal() as session:
+        stmt = insert(UserHealthProfile).values(user_id=identifier, **fields)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["user_id"],
+            set_=fields,
+        ).returning(UserHealthProfile)
+
+        result = await session.execute(stmt)
+        await session.commit()
+        return result.scalar_one()
+
+
+class HealthProfileSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: str
+    created_at: datetime
+
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    birthdate: Optional[date] = None
+    sex: Optional[Literal["M", "F", "X"]] = None
+    is_pregnant: Optional[bool] = None
+
+    personal_medical_history: Optional[dict[str, Any]] = None
+    family_medical_history: Optional[dict[str, Any]] = None
+    lifestyle_habits: Optional[dict[str, Any]] = None
+    substance_use: Optional[dict[str, Any]] = None
+    psychiatric_disorders: Optional[dict[str, Any]] = None
+    medications_supplements: Optional[dict[str, Any]] = None
+    clinical_data: Optional[dict[str, Any]] = None
+
+    @field_validator("sex", mode="before")
+    @classmethod
+    def _validate_sex(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in ("M", "F", "X"):
+            raise ValueError("sex must be one of 'M', 'F', 'X'")
+        return v
+
+
+def user_health_profile_to_schema(orm_obj: UserHealthProfile) -> HealthProfileSchema:
+    """Convert a UserHealthProfile SQLAlchemy instance into its Pydantic schema."""
+    return HealthProfileSchema.model_validate(orm_obj)

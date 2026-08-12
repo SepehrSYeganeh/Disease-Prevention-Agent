@@ -9,7 +9,7 @@ engine = create_async_engine(
     pool_pre_ping=True,
 )
 
-AsyncSessionLocal = async_sessionmaker(
+AsyncSession = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
     autoflush=False,
@@ -19,6 +19,4 @@ AsyncSessionLocal = async_sessionmaker(
 
 class MedicalBase(DeclarativeBase):
     metadata = MetaData(schema="medical")
-    type_annotation_map = {
-        datetime: DateTime(timezone=True),
-    }
+    type_annotation_map = {datetime: DateTime(timezone=True)}
