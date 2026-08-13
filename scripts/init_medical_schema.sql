@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS medical.user_health_profile
 
     first_name               TEXT,
     last_name                TEXT,
-    birthdate                DATE,
+    age                      INTEGER,
     sex                      CHAR(1) CHECK (sex IN ('M', 'F', 'X')), -- male, female, other
     is_pregnant              BOOLEAN,
 

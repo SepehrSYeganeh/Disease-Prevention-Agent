@@ -9,7 +9,11 @@ import hashlib
 
 from agents import agent
 from agents.config import AgentState
-from medicaldb.health_profile import get_user_health_profile
+from medicaldb.health_profile import (
+    get_user_health_profile,
+    upsert_user_health_profile,
+    user_health_profile_to_schema
+)
 
 load_dotenv()
 
@@ -81,20 +85,33 @@ async def start():
     user: cl.User = cl.user_session.get("user")
     cl.user_session.set("identifier", user.identifier)
 
-    uhp = await get_user_health_profile(user.identifier)
+    uhp = await get_user_health_profile(user.identifier)  # user health profile
     if uhp is None:
-        # TODO: use AskUserMessage to create a uhp
-        pass
+        first_name = await cl.AskUserMessage(content="What is your first name?").send()
+        last_name = await cl.AskUserMessage(content="What is your last name?").send()
+        age = await cl.AskUserMessage(content="What is your age?").send()
+        sex = await cl.AskUserMessage(content="What is your sex? [M, F, X]").send()
+
+        uhp = await upsert_user_health_profile(
+            identifier=identifier,
+            first_name=first_name,
+            last_name=last_name,
+            age=age,
+            sex=sex
+        )
+
+    ups = await user_health_profile_to_schema(uhp)  # user profile schema
 
     cl.user_session.set(
         'state',
         AgentState(
             messages=[],
-            user_profile=uhp,
+            user_profile_schema=ups,
             user_biometrics=None
         )
     )
-    await cl.Message(content=f"Hello {user.identifier}! How can I help you? test {test}").send()
+
+    await cl.Message(content=f"Hello {user.identifier}! How can I help you?").send()
 
 
 @cl.on_message

@@ -7,8 +7,8 @@ from medicaldb.health_profile import HealthProfileSchema
 
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add_messages]
-    user_profile: HealthProfileSchema | None
-    user_biometrics: dict | None
+    user_profile_schema: HealthProfileSchema | None
+    user_biometrics_schema: dict | None
 
 
 llm = ChatOllama(

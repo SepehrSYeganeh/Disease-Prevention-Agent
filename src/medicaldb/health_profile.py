@@ -1,18 +1,18 @@
 from sqlalchemy import (
     CheckConstraint,
-    Date,
     ForeignKey,
     String,
     UniqueConstraint,
     BigInteger,
+    Integer,
     func,
     select
 )
 from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.orm import Mapped, mapped_column
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
-from datetime import date, datetime
+from datetime import datetime
 from typing import Optional, Literal, Any
 
 from . import MedicalBase, AsyncSession
@@ -45,7 +45,7 @@ class UserHealthProfile(MedicalBase):
 
     first_name: Mapped[Optional[str]] = mapped_column(String)
     last_name: Mapped[Optional[str]] = mapped_column(String)
-    birthdate: Mapped[Optional[date]] = mapped_column(Date)
+    age: Mapped[Optional[int]] = mapped_column(Integer)
     sex: Mapped[Optional[str]] = mapped_column(String(1))
     is_pregnant: Mapped[Optional[bool]]
 
@@ -72,7 +72,7 @@ async def upsert_user_health_profile(
         identifier: str,
         **fields
 ) -> UserHealthProfile:
-    async with AsyncSessionLocal() as session:
+    async with AsyncSession() as session:
         stmt = insert(UserHealthProfile).values(user_id=identifier, **fields)
         stmt = stmt.on_conflict_do_update(
             index_elements=["user_id"],
@@ -93,7 +93,7 @@ class HealthProfileSchema(BaseModel):
 
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    birthdate: Optional[date] = None
+    age: Optional[int] = None
     sex: Optional[Literal["M", "F", "X"]] = None
     is_pregnant: Optional[bool] = None
 
@@ -113,6 +113,6 @@ class HealthProfileSchema(BaseModel):
         return v
 
 
-def user_health_profile_to_schema(orm_obj: UserHealthProfile) -> HealthProfileSchema:
+async def user_health_profile_to_schema(orm_obj: UserHealthProfile) -> HealthProfileSchema:
     """Convert a UserHealthProfile SQLAlchemy instance into its Pydantic schema."""
     return HealthProfileSchema.model_validate(orm_obj)
