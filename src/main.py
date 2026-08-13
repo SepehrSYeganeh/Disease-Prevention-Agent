@@ -80,34 +80,41 @@ async def auth_callback(username: str, password: str) -> cl.User | None:
 
 # ============ CHAT ============
 
-@cl.on_chat_start
-async def start():
-    user: cl.User = cl.user_session.get("user")
-    cl.user_session.set("identifier", user.identifier)
-
-    uhp = await get_user_health_profile(user.identifier)  # user health profile
+async def get_hps(identifier: str):
+    uhp = await get_user_health_profile(identifier)
     if uhp is None:
         first_name = await cl.AskUserMessage(content="What is your first name?").send()
         last_name = await cl.AskUserMessage(content="What is your last name?").send()
         age = await cl.AskUserMessage(content="What is your age?").send()
         sex = await cl.AskUserMessage(content="What is your sex? [M, F, X]").send()
+        height = await cl.AskUserMessage(content="What is your height (cm)?").send()
+        weight = await cl.AskUserMessage(content="What is your weight (kg)?").send()
 
         uhp = await upsert_user_health_profile(
             identifier=identifier,
-            first_name=first_name,
-            last_name=last_name,
-            age=age,
-            sex=sex
+            first_name=first_name.get('output'),
+            last_name=last_name.get('output'),
+            age=int(age.get('output')),
+            sex=sex.get('output'),
+            height=float(height.get('output')),
+            weight=float(weight.get('output'))
         )
 
-    ups = await user_health_profile_to_schema(uhp)  # user profile schema
+    return await user_health_profile_to_schema(uhp)
+
+
+@cl.on_chat_start
+async def start():
+    user: cl.User = cl.user_session.get("user")
+    cl.user_session.set("identifier", user.identifier)
+
+    hps = await get_hps(user.identifier)
 
     cl.user_session.set(
         'state',
         AgentState(
             messages=[],
-            user_profile_schema=ups,
-            user_biometrics=None
+            health_profile_schema=hps
         )
     )
 
@@ -147,12 +154,15 @@ async def on_chat_resume(thread: ThreadDict):
                 messages.append(HumanMessage(content=content))
             elif step_type == 'assistant_message':
                 messages.append(AIMessage(content=content))
+
+        user: cl.User = cl.user_session.get("user")
+        cl.user_session.set("identifier", user.identifier)
+        hps = await get_hps(user.identifier)
         cl.user_session.set(
             'state',
             AgentState(
-                messages=[],
-                user_profile=None,
-                user_biometrics=None
+                messages=messages,
+                health_profile_schema=hps
             )
         )
 
@@ -162,7 +172,6 @@ async def on_chat_resume(thread: ThreadDict):
             'state',
             AgentState(
                 messages=[],
-                user_profile=None,
-                user_biometrics=None
+                health_profile_schema=None
             )
         )

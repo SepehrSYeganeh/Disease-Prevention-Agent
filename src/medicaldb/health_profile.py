@@ -5,15 +5,16 @@ from sqlalchemy import (
     UniqueConstraint,
     BigInteger,
     Integer,
+    Numeric,
     func,
     select
 )
-from sqlalchemy.dialects.postgresql import JSONB, insert
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Mapped, mapped_column
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from datetime import datetime
-from typing import Optional, Literal, Any
+from typing import Optional, Literal
 
 from . import MedicalBase, AsyncSession
 
@@ -47,15 +48,8 @@ class UserHealthProfile(MedicalBase):
     last_name: Mapped[Optional[str]] = mapped_column(String)
     age: Mapped[Optional[int]] = mapped_column(Integer)
     sex: Mapped[Optional[str]] = mapped_column(String(1))
-    is_pregnant: Mapped[Optional[bool]]
-
-    personal_medical_history: Mapped[Optional[dict]] = mapped_column(JSONB)
-    family_medical_history: Mapped[Optional[dict]] = mapped_column(JSONB)
-    lifestyle_habits: Mapped[Optional[dict]] = mapped_column(JSONB)
-    substance_use: Mapped[Optional[dict]] = mapped_column(JSONB)
-    psychiatric_disorders: Mapped[Optional[dict]] = mapped_column(JSONB)
-    medications_supplements: Mapped[Optional[dict]] = mapped_column(JSONB)
-    clinical_data: Mapped[Optional[dict]] = mapped_column(JSONB)
+    height: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    weight: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
 
 
 async def get_user_health_profile(identifier: str) -> Optional[UserHealthProfile]:
@@ -95,15 +89,8 @@ class HealthProfileSchema(BaseModel):
     last_name: Optional[str] = None
     age: Optional[int] = None
     sex: Optional[Literal["M", "F", "X"]] = None
-    is_pregnant: Optional[bool] = None
-
-    personal_medical_history: Optional[dict[str, Any]] = None
-    family_medical_history: Optional[dict[str, Any]] = None
-    lifestyle_habits: Optional[dict[str, Any]] = None
-    substance_use: Optional[dict[str, Any]] = None
-    psychiatric_disorders: Optional[dict[str, Any]] = None
-    medications_supplements: Optional[dict[str, Any]] = None
-    clinical_data: Optional[dict[str, Any]] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
 
     @field_validator("sex", mode="before")
     @classmethod
