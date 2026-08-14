@@ -69,8 +69,8 @@ async def hb_forecaster(state: AgentState) -> AgentState:
     with torch.no_grad():
         logits = hb_forecaster_model(context)
         pred_idx = logits.argmax(dim=-1).squeeze(0)
+    pred_str = seq_idx2beat(pred_idx.tolist())
 
-    pred_char = seq_idx2beat(pred_idx.tolist())
-    msg.content = f"heartbeat sequence: {pred_char}"
+    msg.content = f"heartbeat sequence: {pred_str}"
     await msg.update()
-    return {"hb_sequence": pred_char}
+    return {"hb_sequence": pred_str}

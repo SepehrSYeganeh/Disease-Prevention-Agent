@@ -23,7 +23,7 @@ async def stream_llm_response(state: AgentState) -> AgentState:
 
 
 async def hb_forecaster_response(state: AgentState) -> AgentState:
-    content = f"Your forecasted heart beats are {state.get('hb_sequence')}"
+    content = state.get('triage_report').to_report_text()
     await cl.Message(content=content).send()
     return {'messages': AIMessage(content=content)}
 

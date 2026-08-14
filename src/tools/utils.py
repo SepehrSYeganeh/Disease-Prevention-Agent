@@ -42,4 +42,4 @@ def seq_idx2beat(indices: list[int]) -> list[str]:
         3: 'F',  # Fusion Beats
         4: 'Q'  # Unknown Beats
     }
-    return [mapping.get(idx, 'Q') for idx in indices]
+    return "".join([mapping.get(idx, 'Q') for idx in indices])

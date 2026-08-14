@@ -1,7 +1,8 @@
 from langgraph.graph import StateGraph, START, END
 from tools import (
     hb_classifier,
-    hb_forecaster
+    hb_forecaster,
+    hb_seq_triage
 )
 from .config import AgentState
 from .router import router
@@ -20,6 +21,8 @@ def _graph_builder() -> StateGraph:
 
     graph.add_node('heartbeat_classifier', hb_classifier)
     graph.add_node('heartbeat_forecaster', hb_forecaster)
+
+    graph.add_node('triage', hb_seq_triage)
 
     graph.add_node('invalid_request_response', invalid_request_response)
     graph.add_node('hb_classifier_response', hb_classifier_response)
@@ -43,7 +46,8 @@ def _graph_builder() -> StateGraph:
     graph.add_edge('heartbeat_classifier', 'hb_classifier_response')
     graph.add_edge('hb_classifier_response', END)
 
-    graph.add_edge('heartbeat_forecaster', 'hb_forecaster_response')
+    graph.add_edge('heartbeat_forecaster', 'triage')
+    graph.add_edge('triage', 'hb_forecaster_response')
     graph.add_edge('hb_forecaster_response', END)
 
     return graph.compile()

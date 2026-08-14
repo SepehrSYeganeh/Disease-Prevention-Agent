@@ -1,4 +1,4 @@
-from typing import TypedDict, Annotated, Literal
+from typing import TypedDict, Annotated, Literal, Any
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage
 from langchain_ollama import ChatOllama
@@ -17,4 +17,5 @@ class AgentState(TypedDict):
     health_profile_schema: HealthProfileSchema | None
     request: Literal['classification', 'forecasting', 'other']
     hb_class: str | None
-    hb_sequence: list[str] | None
+    hb_sequence: str | None
+    triage_report: dict[str, Any] | None

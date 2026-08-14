@@ -16,14 +16,21 @@ class RequestType(BaseModel):
 _req_classifier = llm.with_structured_output(RequestType)
 
 _SYSTEM_PROMPT = SystemMessage(
-    content=(
-        """
-        Classify the user message into one of:
-            - 'classification': asks whether a heartbeat is normal or abnormal
-            - 'forecasting': asks to predict future heartbeat types or rhythm
-            - 'other': anything else
-        """
-    )
+    content="""
+    You are an expert ECG analysis router for a medical heart health tracking system.
+    Your task is to classify the user's input into one of three specific intents.
+
+    Categories: 
+    1. 'classification': User asks to analyze, diagnose, or label a current heartbeat/ECG segment.
+    2. 'forecasting': The user asks to predict future trends, future heartbeat classifications, or any 
+        heart-health-related future outcome.
+    3. 'other': General conversation, greetings, or off-topic queries.
+
+    Examples:
+    - Input: "Analyze my heartbeat." -> Output: 'classification'
+    - Input: "Is my heart rhythm okay?" -> Output: 'forecasting'
+    - Input: "Hello, how are you?" -> Output: 'other'
+    """
 )
 
 
