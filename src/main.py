@@ -8,7 +8,7 @@ import os
 import hashlib
 
 from agents import agent
-from agents.config import AgentState
+from agents import AgentState
 from medicaldb.health_profile import (
     get_user_health_profile,
     upsert_user_health_profile,
