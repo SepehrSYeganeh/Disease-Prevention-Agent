@@ -3,8 +3,8 @@ import torch
 import torch.nn as nn
 import pandas as pd
 
-from agents import AgentState
-from . import HB_CLASSIFIER_PATH
+from agents.config import AgentState
+from .config import HB_CLASSIFIER_PATH, CLASSIFIER_DATA_PATH
 from .utils import hb_int2char
 
 
@@ -48,12 +48,12 @@ hb_classifier_model.load_state_dict(torch.load(HB_CLASSIFIER_PATH, map_location=
 hb_classifier_model.eval()
 
 
-async def heartbeat_classifier(state: AgentState) -> AgentState:
+async def hb_classifier(state: AgentState) -> AgentState:
     msg = cl.Message(content="heartbeat classifier...")
     await msg.send()
 
     # pick a random heartbeat ECG sample
-    df = pd.read_csv("../data/mitbih_test.csv")
+    df = pd.read_csv(CLASSIFIER_DATA_PATH)
     ecg = df.sample(n=1).iloc[0, :186].to_numpy()
 
     # classify
@@ -64,4 +64,4 @@ async def heartbeat_classifier(state: AgentState) -> AgentState:
     pred_char = hb_int2char(pred)
     msg.content = f"heartbeat class: {pred_char}"
     await msg.update()
-    return {'hb_char': pred_char}
+    return {'hb_class': pred_char}

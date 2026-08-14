@@ -3,8 +3,8 @@ import torch
 import torch.nn as nn
 import json
 
-from agents import AgentState
-from . import HB_FORECASTER_PATH
+from agents.config import AgentState
+from .config import HB_FORECASTER_PATH, FORECASTER_DATA_PATH
 from .utils import seq_beat2idx, seq_idx2beat
 
 
@@ -51,12 +51,12 @@ hb_forecaster_model.load_state_dict(torch.load(HB_FORECASTER_PATH, map_location=
 hb_forecaster_model.eval()
 
 
-async def heartbeat_forecaster(state: AgentState) -> AgentState:
+async def hb_forecaster(state: AgentState) -> AgentState:
     msg = cl.Message(content="heartbeat sequence forecaster...")
     await msg.send()
 
     # load data
-    with open('../data/beat_symbols.json', encoding='utf-8') as file:
+    with open(FORECASTER_DATA_PATH, encoding='utf-8') as file:
         beat_syms = json.load(file)
     data_id = '208'
     seq = seq_beat2idx(beat_syms[data_id])
@@ -71,6 +71,6 @@ async def heartbeat_forecaster(state: AgentState) -> AgentState:
         pred_idx = logits.argmax(dim=-1).squeeze(0)
 
     pred_char = seq_idx2beat(pred_idx.tolist())
-    msg.content = f"heartbeat sequence: {pred_idx}"
+    msg.content = f"heartbeat sequence: {pred_char}"
     await msg.update()
     return {"hb_sequence": pred_char}

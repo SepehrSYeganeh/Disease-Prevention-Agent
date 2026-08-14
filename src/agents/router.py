@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from . import AgentState, llm
+from .config import AgentState, llm
 
 
 class RequestType(BaseModel):
@@ -36,13 +36,7 @@ async def router(state: AgentState) -> AgentState:
         _SYSTEM_PROMPT,
         HumanMessage(content=last_message.content),
     ])
-    route = result.request_type
 
-    msg.content = f"next: {route}"
+    msg.content = f"request: {result.request_type}"
     await msg.update()
-
-    destination_map = {
-        'classification': 'classifier',
-        'forecasting': 'forecaster',
-    }
-    return {'next': destination_map.get(route, 'response_generator')}
+    return {'request': result.request_type}

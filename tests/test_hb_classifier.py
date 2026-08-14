@@ -1,10 +1,10 @@
-from src.tools import heartbeat_classifier
+from agents.tools import hb_classifier
 from src.agents import AgentState
 import asyncio
 
 
 async def test_heartbeat_classifier():
-    state = await heartbeat_classifier(AgentState(messages=[]))
+    state = await hb_classifier(AgentState(messages=[]))
     print(state)
 
 

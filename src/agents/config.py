@@ -1,15 +1,8 @@
-from typing import TypedDict, List, Annotated
+from typing import TypedDict, Annotated, Literal
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage
 from langchain_ollama import ChatOllama
 from medicaldb.health_profile import HealthProfileSchema
-
-
-class AgentState(TypedDict):
-    messages: Annotated[List[BaseMessage], add_messages]
-    health_profile_schema: HealthProfileSchema | None
-    hb_class: str | None
-    hb_sequence: list[str] | None
 
 
 llm = ChatOllama(
@@ -17,3 +10,11 @@ llm = ChatOllama(
     streaming=True,
     temperature=0.6
 )
+
+
+class AgentState(TypedDict):
+    messages: Annotated[list[BaseMessage], add_messages]
+    health_profile_schema: HealthProfileSchema | None
+    request: Literal['classification', 'forecasting', 'other']
+    hb_class: str | None
+    hb_sequence: list[str] | None

@@ -1,10 +1,10 @@
-from src.tools import heartbeat_forecaster
+from agents.tools import hb_forecaster
 from src.agents import AgentState
 import asyncio
 
 
 async def test_heartbeat_forecaster():
-    state = await heartbeat_forecaster(AgentState(messages=[]))
+    state = await hb_forecaster(AgentState(messages=[]))
     print(state)
 
 

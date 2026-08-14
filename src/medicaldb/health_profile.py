@@ -54,11 +54,9 @@ class UserHealthProfile(MedicalBase):
 
 async def get_user_health_profile(identifier: str) -> Optional[UserHealthProfile]:
     async with AsyncSession() as session:
-        print("inside get_user_health_profile with", identifier)
         result = await session.execute(
             select(UserHealthProfile).where(UserHealthProfile.user_id == identifier)
         )
-        print("after")
         return result.scalar_one_or_none()
 
 
