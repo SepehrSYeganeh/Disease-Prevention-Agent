@@ -1,11 +1,12 @@
-import pandas as pd
-from src.tools.beat_classifier import ecg_classifier
+from src.tools import heartbeat_classifier
+from src.agents import AgentState
+import asyncio
 
-test_df = pd.read_csv("../data/mit-bih-arrhythmia-dataset/mitbih_test.csv")
-row = 0
-X = test_df.iloc[row, :186].to_numpy()
-y = test_df.iloc[row, 186]
 
-print(f"predicted: {ecg_classifier(X)}")
-print(f"actual: {y}")
+async def test_heartbeat_classifier():
+    state = await heartbeat_classifier(AgentState(messages=[]))
+    print(state)
 
+
+if __name__ == '__main__':
+    asyncio.run(test_heartbeat_classifier())

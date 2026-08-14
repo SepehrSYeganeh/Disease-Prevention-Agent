@@ -8,8 +8,8 @@ from medicaldb.health_profile import HealthProfileSchema
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add_messages]
     health_profile_schema: HealthProfileSchema | None
-    hb_classified: int | None
-    hb_forecasted: list[int] | None
+    hb_class: str | None
+    hb_sequence: list[str] | None
 
 
 llm = ChatOllama(
